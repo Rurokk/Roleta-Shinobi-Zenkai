@@ -461,3 +461,34 @@ flex-direction: column;
 text-align: center;
 }
   }
+
+/* Nomes dos clãs dentro da roleta */
+.wheel-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.wheel-label span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: block;
+  overflow: hidden;
+  color: #fff;
+  font-size: 8px;
+  font-weight: 800;
+  line-height: 1.1;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow: 0 1px 3px #000;
+  transform:
+    translate(-50%, -50%)
+    rotate(var(--label-rotation, 0deg))
+    translateY(calc(-1 * var(--radius, 90px)));
+  transform-origin: center;
+}
