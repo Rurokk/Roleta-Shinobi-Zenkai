@@ -275,7 +275,7 @@ button {
 .wheel-stage {
   position: relative;
   display: grid;
-  width: min(100%, 250px);
+  width: min(100%, 410px);
   aspect-ratio: 1;
   margin: 26px auto 17px;
   place-items: center;
@@ -329,7 +329,7 @@ button {
 .wheel-label span {
   position: absolute;
   display: block;
-  width: 94px;
+  width: 20px;
   margin-top: -9px;
   margin-left: -47px;
   overflow: hidden;
