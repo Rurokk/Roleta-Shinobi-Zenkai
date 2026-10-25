@@ -874,3 +874,32 @@ footer {
     transition-duration: .01ms !important;
   }
 }
+/* Ajuste geral para celulares */
+@media (max-width: 760px) {
+  html {
+    font-size: 14px;
+  }
+
+  body {
+    overflow-x: hidden;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .wheel-wrap {
+    width: 100%;
+    max-width: 290px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .wheel {
+    max-width: 100%;
+  }
+}
