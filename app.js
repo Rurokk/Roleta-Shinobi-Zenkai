@@ -21,6 +21,75 @@ const supabaseClient = window.supabase.createClient(
 
     let isSpinning = false;
     let rotation = 0;
+    
+/* NOMES DOS CLÃS NA ROLETA */
+async function carregarClansNaRoleta() {
+  const { data, error } = await supabaseClient
+    .from("cla_opcoes")
+    .select("nome, peso")
+    .eq("ativo", true);
+
+  if (error) {
+    console.error("Não foi possível carregar os clãs:", error.message);
+    return;
+  }
+
+  if (!data || data.length === 0) return;
+
+  const clans = data;
+  const total = clans.length;
+  const cores = [
+    "#8f263d",
+    "#35121e",
+    "#b8863b",
+    "#4c1726",
+    "#702035",
+    "#291019"
+  ];
+
+  // Desenha os segmentos conforme os clãs ativos.
+  const angulo = 360 / total;
+  const segmentos = clans.map((cla, i) => {
+    const inicio = i * angulo;
+    const fim = (i + 1) * angulo;
+    return `${cores[i % cores.length]} ${inicio}deg ${fim}deg`;
+  });
+
+  wheel.style.background =
+    `conic-gradient(from -90deg, ${segmentos.join(",")})`;
+
+  // Remove apenas os nomes antigos, preservando o centro.
+  wheel.querySelectorAll(".wheel-label").forEach((el) => el.remove());
+
+  const centro = wheel.querySelector(".wheel-center");
+  const diametro = wheel.clientWidth || 270;
+  const raio = diametro * 0.34;
+  const larguraTexto = Math.max(38, Math.min(72, 360 / total * 4.2));
+  const tamanhoFonte = total > 18 ? 6 : total > 12 ? 7 : 8;
+
+  clans.forEach((cla, i) => {
+    const anguloCentro = i * angulo + angulo / 2;
+
+    const label = document.createElement("div");
+    label.className = "wheel-label";
+    label.style.transform = `rotate(${anguloCentro}deg)`;
+
+    const texto = document.createElement("span");
+    texto.textContent = cla.nome;
+    texto.title = cla.nome;
+    texto.style.setProperty("--radius", `${raio}px`);
+    texto.style.setProperty("--label-rotation", `${-anguloCentro}deg`);
+    texto.style.width = `${larguraTexto}px`;
+    texto.style.marginLeft = `${-larguraTexto / 2}px`;
+    texto.style.fontSize = `${tamanhoFonte}px`;
+
+    label.appendChild(texto);
+    wheel.insertBefore(label, centro);
+  });
+}
+
+// Carrega os nomes assim que a página abre.
+carregarClansNaRoleta();
 
     function setMessage(element, message) {
       element.textContent = message;
