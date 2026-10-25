@@ -1,175 +1,103 @@
-
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#10070a">
-  <title>Roleta do Shinobi Zenkai</title>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="app.js" defer></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#100d10">
+<title>Roleta do Shinobi Zenkai</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="app.js" defer></script>
 </head>
 <body>
-  <header class="topbar">
-    <a class="brand" href="#">
-      <span class="brand-mark">忍</span>
-      <span>
-        <strong>SHINOBI <em>ZENKAI</em></strong>
-        <small>SISTEMA DE CLÃS</small>
-      </span>
-    </a>
+<header class="topbar">
+<div class="brand">
+<span class="brand-symbol">忍</span>
+<div>
+<strong>SHINOBI ZENKAI</strong>
+<small>SISTEMA DE CLÃS</small>
+</div>
+</div>
+<span class="status"><i></i> SISTEMA ONLINE</span>
+</header>
 
-    <div class="account-area">
-      <span id="connectionStatus" class="connection"><i></i>Verificando conexão</span>
-      <button id="loginBtn" class="btn discord">Entrar com Discord</button>
-      <button id="logoutBtn" class="btn quiet hidden">Sair</button>
-    </div>
-  </header>
+<main class="container">
+<section class="intro">
+<p class="eyebrow">SEU DESTINO NINJA COMEÇA AQUI</p>
+<h1>ROLETA <span>SHINOBI</span></h1>
+<p class="subtitle">O destino escolhe seu clã. A jornada é sua.</p>
+</section>
 
-  <main class="shell">
-    <section class="hero">
-      <p class="eyebrow">SEU DESTINO NINJA COMEÇA AQUI</p>
-      <h1>ROLETA <span>SHINOBI</span></h1>
-      <p>O destino escolhe seu clã. A jornada é sua.</p>
-    </section>
+<section class="login-panel panel">
+<div>
+<p class="eyebrow">IDENTIFICAÇÃO SHINOBI</p>
+<h2>Entre com o Discord</h2>
+<p class="muted">Conecte sua conta para registrar seus giros.</p>
+</div>
+<button id="loginBtn" class="discord-button">Entrar com Discord</button>
+<button id="logoutBtn" class="secondary-button hidden">Sair da conta</button>
+<p id="authMessage" class="message" aria-live="polite">Faça login para começar.</p>
+</section>
 
-    <section class="auth-message panel">
-      <div>
-        <p class="kicker">IDENTIFICAÇÃO SHINOBI</p>
-        <h2 id="welcomeTitle">Entre com o Discord</h2>
-        <p id="authMessage" class="muted" aria-live="polite">
-          Conecte sua conta para registrar seus giros.
-        </p>
-      </div>
-    </section>
+<section class="game-grid">
+<div class="roulette-panel panel">
+<div class="section-heading">
+<div>
+<p class="eyebrow">PROVA DO DESTINO</p>
+<h2>Roleta de Clãs</h2>
+</div>
+<span class="pill">5 GIROS MÁX.</span>
+</div>
 
-    <section class="game-layout">
-      <section class="panel wheel-panel">
-        <div class="panel-heading">
-          <div>
-            <p class="kicker">PROVA DO DESTINO</p>
-            <h2>Roleta de Clãs</h2>
-          </div>
-          <span class="live">● SISTEMA ONLINE</span>
-        </div>
+<div class="wheel-wrap">
+<div class="wheel-pointer"></div>
+<div id="wheel" class="wheel">
+<div class="wheel-center">
+<span>忍</span>
+<small>ZENKAI</small>
+</div>
+</div>
+</div>
 
-        <div class="wheel-stage">
-          <div class="pointer" aria-hidden="true"></div>
-          <div id="wheel" class="wheel" aria-label="Roleta com os clãs">
-            <div class="wheel-placeholder" id="wheelPlaceholder">忍</div>
-          </div>
-          <div class="wheel-center" aria-hidden="true">
-            <b>忍</b>
-            <small>ZENKAI</small>
-          </div>
-        </div>
+<div id="result" class="result-box">
+<small>SEU DESTINO AGUARDA</small>
+<strong>???</strong>
+</div>
 
-        <div class="legend">
-          <span><i class="common"></i>Comum</span>
-          <span><i class="rare"></i>Raro</span>
-          <span><i class="legendary"></i>Lendário</span>
-        </div>
+<button id="spinBtn" class="spin-button" disabled>
+<span>✦</span> GIRAR A ROLETA
+</button>
+<p id="spinMessage" class="message" aria-live="polite">Entre com o Discord para liberar a roleta.</p>
+</div>
 
-        <div id="result" class="result">
-          <small>SEU DESTINO AGUARDA</small>
-          <strong id="resultName">???</strong>
-          <span id="resultDetail">Faça login e gire para descobrir seu clã.</span>
-        </div>
+<aside class="side-column">
+<div class="panel progress-panel">
+<p class="eyebrow">SUA JORNADA</p>
+<h2>Progresso</h2>
+<div class="counter"><strong id="remaining">—</strong><span>giros restantes</span></div>
+<div class="progress-track"><div id="progressBar" class="progress-fill"></div></div>
+<p class="muted"><span id="used">—</span> de 5 giros utilizados</p>
+</div>
 
-        <button id="spinBtn" class="btn spin" disabled>
-          ✦ &nbsp; GIRAR A ROLETA
-        </button>
-        <p id="spinMessage" class="muted center" aria-live="polite">
-          Entre com o Discord para liberar a roleta.
-        </p>
-      </section>
+<div class="panel history-panel">
+<p class="eyebrow">REGISTRO NINJA</p>
+<h2>Seus resultados</h2>
+<ul id="historyList" class="history-list">
+<li class="empty-history">Faça login para ver seu histórico.</li>
+</ul>
+</div>
+</aside>
+</section>
 
-      <aside class="side-column">
-        <section class="panel stats-panel">
-          <p class="kicker">SUA JORNADA</p>
-          <h2>Progresso de giros</h2>
-
-          <div class="big-stat">
-            <div>
-              <small>GIROS DISPONÍVEIS</small>
-              <strong id="remaining">—</strong>
-            </div>
-            <span>✦</span>
-          </div>
-
-          <div class="stat-grid">
-            <div>
-              <small>GIROS UTILIZADOS</small>
-              <strong id="used">—</strong>
-            </div>
-            <div>
-              <small>GIROS EXTRAS</small>
-              <strong id="extras">—</strong>
-            </div>
-          </div>
-
-          <div class="progress-track">
-            <div id="progressBar" class="progress-fill"></div>
-          </div>
-          <p class="note">Os giros e resultados são validados pelo banco de dados.</p>
-        </section>
-
-        <section class="panel history-panel">
-          <div class="panel-heading">
-            <div>
-              <p class="kicker">REGISTROS</p>
-              <h2>Últimos resultados</h2>
-            </div>
-          </div>
-          <ul id="historyList" class="history-list">
-            <li class="empty">Faça login para ver seu histórico.</li>
-          </ul>
-        </section>
-      </aside>
-    </section>
-
-    <section id="adminPanel" class="panel admin-panel hidden">
-      <div class="panel-heading admin-heading">
-        <div>
-          <p class="kicker">CENTRO DE CONTROLE</p>
-          <h2>Painel administrativo</h2>
-          <p class="muted">As permissões são verificadas pelo servidor.</p>
-        </div>
-        <span class="live">ACESSO PROTEGIDO</span>
-      </div>
-
-      <p id="adminMessage" class="notice" aria-live="polite">
-        Verificando permissões…
-      </p>
-      <nav id="adminTabs" class="admin-tabs" aria-label="Seções administrativas"></nav>
-      <div id="adminContent" class="admin-content"></div>
-    </section>
-  </main>
-
-  <footer>
-    <span>SHINOBI ZENKAI</span>
-    <span>Respeite os clãs. Honre sua jornada.</span>
-  </footer>
-
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+<footer>
+<span>SHINOBI ZENKAI</span>
+<span>O destino favorece quem está preparado.</span>
+</footer>
+</main>
 </body>
 </html>
-                                                                                                                                                      <button id="spinBtn" class="spin-button" disabled>
-                                                                                                                                                                                                                                                                                                                                                                                                  <span>✦</span> GIRAR A ROLETA
-                                                                                                                                                                                                                                                                                                                                                                                                          </button>
-                                                                                                                                                                                                                                                                                                                                                                                                                  <p id="spinMessage" class="message" aria-live="polite">Entre com o Discord para liberar a roleta.</p>
-                                                                                                                                                                                                                                                                                                                                                                                                                        </div>
 
-                                                                                                                                                                                                                                                                                                                                                                                                                              <aside class="side-column">
-                                                                                                                                                                                                                                                                                                                                                                                                                                      <div class="panel progress-panel">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                <p class="eyebrow">SUA JORNADA</p>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                          <h2>Progresso</h2>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <div class="counter"><strong id="remaining">—</strong><span>giros restantes</span></div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                              <div class="progress-track"><div id="progressBar" class="progress-fill"></div></div>
+iv class="progress-track"><div id="progressBar" class="progress-fill"></div></div>
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         <p class="muted"><span id="used">—</span> de 5 giros utilizados</p>
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 </div>
 
