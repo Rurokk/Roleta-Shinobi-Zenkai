@@ -3,392 +3,203 @@ const SUPABASE_URL = "https://lmskxdlpannjnbdqveug.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_bOTpjvruQ9EHN0BecbLGoQ_F53oQdWg";
 
 const supabaseClient = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_ANON_KEY
+SUPABASE_URL,
+SUPABASE_ANON_KEY
 );
 
-const $ = id => document.getElementById(id);
+const loginBtn = document.getElementById("loginBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+const authMessage = document.getElementById("authMessage");
+const spinBtn = document.getElementById("spinBtn");
+const spinMessage = document.getElementById("spinMessage");
+const wheel = document.getElementById("wheel");
+const result = document.getElementById("result");
+const remaining = document.getElementById("remaining");
+const used = document.getElementById("used");
+const progressBar = document.getElementById("progressBar");
+const historyList = document.getElementById("historyList");
 
-const loginBtn = $("loginBtn");
-const logoutBtn = $("logoutBtn");
-const connectionStatus = $("connectionStatus");
-const authMessage = $("authMessage");
-const welcomeTitle = $("welcomeTitle");
-const spinBtn = $("spinBtn");
-const spinMessage = $("spinMessage");
-const wheel = $("wheel");
-const resultName = $("resultName");
-const resultDetail = $("resultDetail");
-const remainingEl = $("remaining");
-const usedEl = $("used");
-const extrasEl = $("extras");
-const progressBar = $("progressBar");
-const historyList = $("historyList");
-const adminPanel = $("adminPanel");
-const adminMessage = $("adminMessage");
-const adminTabs = $("adminTabs");
-const adminContent = $("adminContent");
-const toast = $("toast");
-
-let session = null;
 let isSpinning = false;
 let rotation = 0;
-let activeClans = [];
-let toastTimer;
 
-const ADMIN_SECTIONS = [
-  { id: "players", label: "Jogadores", permission: "gerenciar_jogadores" },
-  { id: "spins", label: "Gerenciar giros", permission: "gerenciar_giros" },
-  { id: "clans", label: "Clãs", permission: "gerenciar_clas" },
-  { id: "stats", label: "Estatísticas", permission: "consultar_estatisticas" },
-  { id: "permissions", label: "Permissões", ownerOnly: true },
-  { id: "audit", label: "Auditoria", ownerOnly: true }
-];
-
-function esc(value) {
-  return String(value ?? "").replace(/[&<>"']/g, c => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;"
-  })[c]);
+function setMessage(element, message) {
+element.textContent = message;
 }
 
-function message(element, text) {
-  if (element) element.textContent = text;
+function showLoggedIn(isLoggedIn) {
+loginBtn.classList.toggle("hidden", isLoggedIn);
+logoutBtn.classList.toggle("hidden", !isLoggedIn);
+spinBtn.disabled = !isLoggedIn || isSpinning;
 }
-
-function toastMessage(text) {
-  toast.textContent = text;
-  toast.classList.add("show");
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toast.classList.remove("show"), 3500);
-}
-
-function emptyList(list, text) {
-  list.replaceChildren();
-  const li = document.createElement("li");
-  li.className = "empty";
-  li.textContent = text;
-  list.appendChild(li);
-}
-
-function one(data) {
-  return Array.isArray(data) ? data[0] : data;
-}
-
-async function callRPC(name, args = {}) {
-  const { data, error } = await supabaseClient.rpc(name, args);
-  if (error) throw error;
-  return data;
-}
-
-function setLoginState(connected) {
-  loginBtn.classList.toggle("hidden", connected);
-  logoutBtn.classList.toggle("hidden", !connected);
-  connectionStatus.classList.toggle("connected", connected);
-
-  connectionStatus.innerHTML =
-    `<i></i>${connected ? "Discord conectado" : "Desconectado"}`;
-
-  spinBtn.disabled = !connected || isSpinning;
-}
-
-/* CARREGAMENTO E DESENHO DA ROLETA */
-
-async function loadClans() {
-  const { data, error } = await supabaseClient
-    .from("cla_opcoes")
-    .select("id,nome,peso,ativo")
-    .eq("ativo", true)
-    .order("nome", { ascending: true });
-
-  if (error) {
-    console.error("Erro ao carregar clãs:", error);
-    message(
-      spinMessage,
-      "Não foi possível carregar os clãs. Verifique as permissões de leitura no Supabase."
-    );
-    return;
-  }
-
-  activeClans = data || [];
-  drawWheel();
-}
-
-function drawWheel() {
-  wheel.querySelectorAll(".wheel-label").forEach(el => el.remove());
-
-  const placeholder = $("wheelPlaceholder");
-
-  if (!activeClans.length) {
-    placeholder.classList.remove("hidden");
-    wheel.style.background =
-      "conic-gradient(#35121e,#8f263d,#b8863b,#35121e)";
-    return;
-  }
-
-  placeholder.classList.add("hidden");
-
-  const colors = [
-    "#7d1d2b", "#27141d", "#a62b3a", "#21141b",
-    "#9b6c38", "#4c1726", "#522032", "#34202a"
-  ];
-
-  const step = 360 / activeClans.length;
-
-  wheel.style.background = `conic-gradient(from -90deg, ${
-    activeClans.map((clan, i) =>
-      `${colors[i % colors.length]} ${i * step}deg ${(i + 1) * step}deg`
-    ).join(",")
-  })`;
-
-  const size = wheel.clientWidth || 280;
-  const radius = size * (activeClans.length > 16 ? 0.36 : 0.34);
-  const labelWidth = Math.max(
-    34,
-    Math.min(74, size * Math.PI / activeClans.length * 0.9)
-  );
-
-  const fontSize =
-    activeClans.length > 22 ? 6 :
-    activeClans.length > 15 ? 7 : 8;
-
-  activeClans.forEach((clan, i) => {
-    const middle = i * step + step / 2;
-
-    const label = document.createElement("div");
-    label.className = "wheel-label";
-    label.style.transform = `rotate(${middle}deg)`;
-
-    const span = document.createElement("span");
-    span.textContent = clan.nome;
-    span.title = clan.nome;
-    span.style.width = `${labelWidth}px`;
-    span.style.marginLeft = `${-labelWidth / 2}px`;
-    span.style.fontSize = `${fontSize}px`;
-    span.style.setProperty("--radius", `${radius}px`);
-    span.style.setProperty("--label-rotation", `${-middle}deg`);
-
-    label.appendChild(span);
-    wheel.appendChild(label);
-  });
-}
-
-/* PROGRESSO E HISTÓRICO */
 
 async function loadProgress() {
-  const p = one(await callRPC("meu_progresso_giros"));
-  if (!p) return;
+const { data, error } = await supabaseClient.rpc("meu_progresso_giros");
 
-  const remaining = Number(
-    p.giros_restantes ?? p.giros_totais_disponiveis ?? 0
-  );
+if (error) {
+setMessage(spinMessage, "Não foi possível carregar seus giros: " + error.message);
+return;
+}
 
-  const used = Number(p.giros_usados ?? 0);
-  const extras = Number(p.giros_extras ?? 0);
+const progress = Array.isArray(data) ? data[0] : data;
+if (!progress) return;
 
-  remainingEl.textContent = remaining;
-  usedEl.textContent = used;
-  extrasEl.textContent = extras;
+remaining.textContent = progress.giros_restantes;
+used.textContent = progress.giros_usados;
+progressBar.style.width = ${(progress.giros_usados / 5) * 100}%`;
 
-  progressBar.style.width =
-    `${Math.max(0, Math.min(100, used / 5 * 100))}%`;
+spinBtn.disabled = progress.giros_restantes <= 0 || isSpinning;
 
-  spinBtn.disabled = !session || remaining <= 0 || isSpinning;
-
-  message(
-    spinMessage,
-    remaining > 0
-      ? `Você tem ${remaining} giro(s) disponível(is).`
-      : "Você não tem giros disponíveis."
-  );
+if (progress.giros_restantes <= 0) {
+setMessage(spinMessage, "Você já utilizou seus 5 giros.");
+} else {
+setMessage(spinMessage, Você tem${progress.giros_restantes} giro(s) disponível(is).`);
+}
 }
 
 async function loadHistory() {
-  const rows = await callRPC("meu_historico_giros");
+const { data, error } = await supabaseClient.rpc("meu_historico_giros");
 
-  historyList.replaceChildren();
+if (error) {
+historyList.replaceChildren();
+const li = document.createElement("li");
+li.className = "empty-history";
+li.textContent = "Não foi possível carregar o histórico.";
+historyList.appendChild(li);
+return;
+}
 
-  if (!rows || !rows.length) {
-    emptyList(historyList, "Você ainda não girou a roleta.");
-    return;
-  }
+historyList.replaceChildren();
 
-  rows.forEach(row => {
-    const li = document.createElement("li");
-    li.className = "history-item";
+if (!data || data.length === 0) {
+const li = document.createElement("li");
+li.className = "empty-history";
+li.textContent = "Você ainda não girou a roleta.";
+historyList.appendChild(li);
+return;
+}
 
-    const clan = document.createElement("strong");
-    clan.textContent = row.cla || "Clã desconhecido";
+data.forEach((item) => {
+const li = document.createElement("li");
+const clan = document.createElement("strong");
+const date = document.createElement("time");
 
-    const date = document.createElement("small");
-    date.textContent = row.criado_em
-      ? new Date(row.criado_em).toLocaleString("pt-BR", {
-          dateStyle: "short",
-          timeStyle: "short"
-        })
-      : "";
+clan.textContent = item.cla;
+date.textContent = new Date(item.criado_em).toLocaleDateString("pt-BR");
 
-    li.append(clan, date);
-    historyList.appendChild(li);
-  });
+li.append(clan, date);
+historyList.appendChild(li);
+});
 }
 
 async function refreshDashboard() {
-  try {
-    await Promise.all([loadProgress(), loadHistory()]);
-  } catch (error) {
-    console.error(error);
-    message(
-      spinMessage,
-      "Erro ao carregar os dados. Confira as funções SQL do Supabase."
-    );
-  }
+await loadProgress();
+await loadHistory();
 }
 
-/* RARIDADE VISUAL */
+async function updateSession() {
+const { data, error } = await supabaseClient.auth.getSession();
 
-function rarity(weight) {
-  const w = Number(weight);
-
-  if (w <= 2) return "Lendário";
-  if (w <= 4) return "Épico";
-  if (w <= 5) return "Raro";
-  return "Comum";
+if (error) {
+setMessage(authMessage, "Erro ao verificar a sessão.");
+return;
 }
 
-/* GIRO */
+const session = data.session;
+showLoggedIn(Boolean(session));
 
-function animateWheel(clanName) {
-  const index = activeClans.findIndex(c => c.nome === clanName);
+if (session) {
+setMessage(authMessage, "Conectado! Sua jornada ninja começou.");
+await refreshDashboard();
+} else {
+setMessage(authMessage, "Faça login com o Discord para começar.");
+remaining.textContent = "—";
+used.textContent = "—";
+progressBar.style.width = "0%";
+spinBtn.disabled = true;
+historyList.replaceChildren();
 
-  if (index < 0 || !activeClans.length) {
-    rotation += 6 * 360 + Math.random() * 360;
-  } else {
-    const step = 360 / activeClans.length;
-    const target =
-      (360 - (index * step + step / 2) + 360) % 360;
-
-    const current = ((rotation % 360) + 360) % 360;
-
-    rotation += 6 * 360 + (target - current + 360) % 360;
-  }
-
-  wheel.style.transform = `rotate(${rotation}deg)`;
+const li = document.createElement("li");
+li.className = "empty-history";
+li.textContent = "Faça login para ver seu histórico.";
+historyList.appendChild(li);
+}
 }
 
-async function spin() {
-  if (!session || isSpinning) return;
+loginBtn.addEventListener("click", async () => {
+loginBtn.disabled = true;
+setMessage(authMessage, "Redirecionando para o Discord...");
 
-  isSpinning = true;
-  spinBtn.disabled = true;
-  wheel.classList.add("spinning");
+const { error } = await supabaseClient.auth.signInWithOAuth({
+provider: "discord",
+options: {
+redirectTo: window.location.origin + window.location.pathname
+}
+});
 
-  resultName.textContent = "…";
-  resultDetail.textContent = "O destino está sendo decidido.";
-  message(spinMessage, "A roleta está girando…");
+if (error) {
+setMessage(authMessage, "Erro no login: " + error.message);
+loginBtn.disabled = false;
+}
+});
 
-  try {
-    // O banco decide o resultado e desconta o giro.
-    const result = one(await callRPC("girar_roleta"));
+logoutBtn.addEventListener("click", async () => {
+const { error } = await supabaseClient.auth.signOut();
 
-    const clanName = typeof result === "string"
-      ? result
-      : result?.cla || result?.nome || result?.resultado;
-
-    if (!clanName) {
-      throw new Error(
-        "A função girar_roleta não retornou o nome do clã esperado."
-      );
-    }
-
-    animateWheel(clanName);
-
-    setTimeout(async () => {
-      resultName.textContent = clanName;
-
-      const clan = activeClans.find(c => c.nome === clanName);
-
-      resultDetail.textContent = clan
-        ? `Raridade visual: ${rarity(clan.peso)}`
-        : "Resultado confirmado pelo servidor.";
-
-      $("result").classList.remove("result-pop");
-      void $("result").offsetWidth;
-      $("result").classList.add("result-pop");
-
-      wheel.classList.remove("spinning");
-      isSpinning = false;
-
-      await refreshDashboard();
-    }, 5100);
-
-  } catch (error) {
-    console.error("Erro ao girar:", error);
-
-    wheel.classList.remove("spinning");
-    isSpinning = false;
-
-    message(spinMessage, error.message || "Não foi possível girar.");
-    toastMessage(error.message || "Erro ao girar.");
-
-    await loadProgress().catch(() => {});
-  }
+if (error) {
+setMessage(authMessage, "Não foi possível sair da conta.");
+return;
 }
 
-/* FERRAMENTAS DO PAINEL ADMINISTRATIVO */
+setMessage(authMessage, "Você saiu da sua conta.");
+await updateSession();
+});
 
-function table(headers, rows) {
-  if (!rows.length) {
-    return '<p class="empty">Nenhum registro encontrado.</p>';
-  }
+spinBtn.addEventListener("click", async () => {
+if (isSpinning) return;
 
-  return `
-    <div class="admin-table-wrap">
-      <table class="admin-table">
-        <thead>
-          <tr>${headers.map(h => `<th>${esc(h)}</th>`).join("")}</tr>
-        </thead>
-        <tbody>
-          ${rows.map(row => `
-            <tr>${row.map(value =>
-              `<td>${esc(value ?? "—")}</td>`
-            ).join("")}</tr>
-          `).join("")}
-        </tbody>
-      </table>
-    </div>
-  `;
+isSpinning = true;
+spinBtn.disabled = true;
+setMessage(spinMessage, "O destino está sendo decidido...");
+result.querySelector("small").textContent = "SORTEANDO SEU CLÃ";
+result.querySelector("strong").textContent = "???";
+wheel.classList.add("spinning");
+
+rotation += 1800 + Math.floor(Math.random() * 720);
+wheel.style.transform = rotate(${rotation}deg);
+
+const { data, error } = await supabaseClient.rpc("girar_roleta");
+
+if (error) {
+isSpinning = false;
+wheel.classList.remove("spinning");
+setMessage(spinMessage, error.message.includes("Limite")
+? "Você já utilizou seus 5 giros."
+: "Não foi possível girar. Tente novamente.");
+await refreshDashboard();
+return;
 }
 
-async function checkAdmin() {
-  adminPanel.classList.add("hidden");
-  adminTabs.replaceChildren();
-  adminContent.replaceChildren();
+const outcome = Array.isArray(data) ? data[0] : data;
 
-  if (!session) return;
+window.setTimeout(async () => {
+result.querySelector("small").textContent = "SEU CLÃ FOI REVELADO";
+result.querySelector("strong").textContent = outcome.cla;
+setMessage(spinMessage, "Clã sorteado! Que sua jornada seja lendária.");
+wheel.classList.remove("spinning");
+isSpinning = false;
+await refreshDashboard();
+}, 3000);
+});
 
-  const allowed = [];
+supabaseClient.auth.onAuthStateChange((event, session) => {
+if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "INITIAL_SESSION") {
+setTimeout(() => updateSession(), 0);
+}
+});
 
-  for (const section of ADMIN_SECTIONS) {
-    if (section.ownerOnly) continue;
+updateSession();
 
-    try {
-      const value = await callRPC("admin_tem_permissao", {
-        p_permissao: section.permission
-      });
-
-      if (value === true || value === "true") {
-        allowed.push(section.id);
-      }
-    } catch (error) {
-      console.debug("Permissão indisponível:", section.id, error.message);
-    }
-  }
-
-  // A auditoria é restrita ao proprietário no banco.
+rita ao proprietário no banco.
   let owner = false;
 
   try {
