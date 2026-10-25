@@ -699,22 +699,36 @@ async function updateSession() {
   }
 }
 
+
 loginBtn.addEventListener("click", async () => {
   loginBtn.disabled = true;
-  message(authMessage, "Redirecionando para o Discord…");
+  message(authMessage, "Conectando ao Discord...");
 
-  const { error } = await supabaseClient.auth.signInWithOAuth({
-    provider: "discord",
-    options: {
-      redirectTo: location.origin + location.pathname
+  try {
+    const { data, error } =
+      await supabaseClient.auth.signInWithOAuth({
+        provider: "discord",
+        options: {
+          redirectTo: window.location.origin + "/"
+        }
+      });
+
+    if (error) throw error;
+
+    if (data?.url) {
+      window.location.assign(data.url);
+      return;
     }
-  });
 
-  if (error) {
+    throw new Error("O Supabase não retornou a URL de login.");
+  } catch (error) {
+    console.error("Erro no login Discord:", error);
     message(authMessage, "Erro no login: " + error.message);
+    toastMessage("Não foi possível iniciar o login com Discord.");
     loginBtn.disabled = false;
   }
 });
+
 
 logoutBtn.addEventListener("click", async () => {
   const { error } = await supabaseClient.auth.signOut();
