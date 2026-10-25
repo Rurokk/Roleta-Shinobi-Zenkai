@@ -275,7 +275,7 @@ button {
 .wheel-stage {
   position: relative;
   display: grid;
-  width: min(100%, 410px);
+  width: min(100%, 250px);
   aspect-ratio: 1;
   margin: 26px auto 17px;
   place-items: center;
