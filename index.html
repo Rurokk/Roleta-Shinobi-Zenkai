@@ -1,119 +1,103 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#100d10">
-<title>Roleta do Shinobi Zenkai</title>
-<link rel="stylesheet" href="style.css">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="app.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#100d10">
+  <title>Roleta do Shinobi Zenkai</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="app.js" defer></script>
 </head>
 <body>
-<header class="topbar">
-<div class="brand">
-<span class="brand-symbol">忍</span>
-<div>
-<strong>SHINOBI ZENKAI</strong>
-<small>SISTEMA DE CLÃS</small>
-</div>
-</div>
-<span class="status"><i></i> SISTEMA ONLINE</span>
-</header>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-symbol">忍</span>
+      <div>
+        <strong>SHINOBI ZENKAI</strong>
+        <small>SISTEMA DE CLÃS</small>
+      </div>
+    </div>
+    <span class="status"><i></i> SISTEMA ONLINE</span>
+  </header>
 
-<main class="container">
-<section class="intro">
-<p class="eyebrow">SEU DESTINO NINJA COMEÇA AQUI</p>
-<h1>ROLETA <span>SHINOBI</span></h1>
-<p class="subtitle">O destino escolhe seu clã. A jornada é sua.</p>
-</section>
+  <main class="container">
+    <section class="intro">
+      <p class="eyebrow">SEU DESTINO NINJA COMEÇA AQUI</p>
+      <h1>ROULETA <span>SHINOBI</span></h1>
+      <p class="subtitle">O destino escolhe seu clã. A jornada é sua.</p>
+    </section>
 
-<section class="login-panel panel">
-<div>
-<p class="eyebrow">IDENTIFICAÇÃO SHINOBI</p>
-<h2>Entre com o Discord</h2>
-<p class="muted">Conecte sua conta para registrar seus giros.</p>
-</div>
-<button id="loginBtn" class="discord-button">Entrar com Discord</button>
-<button id="logoutBtn" class="secondary-button hidden">Sair da conta</button>
-<p id="authMessage" class="message" aria-live="polite">Faça login para começar.</p>
-</section>
+    <section class="login-panel panel">
+      <div>
+        <p class="eyebrow">IDENTIFICAÇÃO SHINOBI</p>
+        <h2>Entre com o Discord</h2>
+        <p class="muted">Conecte sua conta para registrar seus giros.</p>
+      </div>
+      <button id="loginBtn" class="discord-button">Entrar com Discord</button>
+      <button id="logoutBtn" class="secondary-button hidden">Sair da conta</button>
+      <p id="authMessage" class="message" aria-live="polite">Faça login para começar.</p>
+    </section>
 
-<section class="game-grid">
-<div class="roulette-panel panel">
-<div class="section-heading">
-<div>
-<p class="eyebrow">PROVA DO DESTINO</p>
-<h2>Roleta de Clãs</h2>
-</div>
-<span class="pill">5 GIROS MÁX.</span>
-</div>
+    <section class="game-grid">
+      <div class="roulette-panel panel">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">PROVA DO DESTINO</p>
+            <h2>Roleta de Clãs</h2>
+          </div>
+          <span class="pill">5 GIROS MÁX.</span>
+        </div>
 
-<div class="wheel-wrap">
-<div class="wheel-pointer"></div>
-<div id="wheel" class="wheel">
-<div class="wheel-center">
-<span>忍</span>
-<small>ZENKAI</small>
-</div>
-</div>
-</div>
+        <div class="wheel-wrap">
+          <div class="wheel-pointer"></div>
+          <div id="wheel" class="wheel">
+            <div class="wheel-center">
+              <span>忍</span>
+              <small>ZENKAI</small>
+            </div>
+          </div>
+        </div>
 
-<div id="result" class="result-box">
-<small>SEU DESTINO AGUARDA</small>
-<strong>???</strong>
-</div>
+        <div id="result" class="result-box">
+          <small>SEU DESTINO AGUARDA</small>
+          <strong>???</strong>
+        </div>
 
-<button id="spinBtn" class="spin-button" disabled>
-<span>✦</span> GIRAR A ROLETA
-</button>
-<p id="spinMessage" class="message" aria-live="polite">Entre com o Discord para liberar a roleta.</p>
-</div>
+        <button id="spinBtn" class="spin-button" disabled>
+          <span>✦</span> GIRAR A ROLETA
+        </button>
+        <p id="spinMessage" class="message" aria-live="polite">Entre com o Discord para liberar a roleta.</p>
+      </div>
 
-<aside class="side-column">
-<div class="panel progress-panel">
-<p class="eyebrow">SUA JORNADA</p>
-<h2>Progresso</h2>
-<div class="counter"><strong id="remaining">—</strong><span>giros restantes</span></div>
-<div class="progress-track"><div id="progressBar" class="progress-fill"></div></div>
-<p class="muted"><span id="used">—</span> de 5 giros utilizados</p>
-</div>
+      <aside class="side-column">
+        <div class="panel progress-panel">
+          <p class="eyebrow">SUA JORNADA</p>
+          <h2>Progresso</h2>
+          <div class="counter"><strong id="remaining">—</strong><span>giros restantes</span></div>
+          <div class="progress-track"><div id="progressBar" class="progress-fill"></div></div>
+          <p class="muted"><span id="used">—</span> de 5 giros utilizados</p>
+        </div>
 
-<div class="panel history-panel">
-<p class="eyebrow">REGISTRO NINJA</p>
-<h2>Seus resultados</h2>
-<ul id="historyList" class="history-list">
-<li class="empty-history">Faça login para ver seu histórico.</li>
-</ul>
-</div>
-</aside>
-</section>
+        <div class="panel history-panel">
+          <p class="eyebrow">REGISTRO NINJA</p>
+          <h2>Seus resultados</h2>
+          <ul id="historyList" class="history-list">
+            <li class="empty-history">Faça login para ver seu histórico.</li>
+          </ul>
+        </div>
+      </aside>
+    </section>
 
-<footer>
-<span>SHINOBI ZENKAI</span>
-<span>O destino favorece quem está preparado.</span>
-</footer>
-</main>
+    <footer>
+      <span>SHINOBI ZENKAI</span>
+      <span>O destino favorece quem está preparado.</span>
+    </footer>
+  </main>
 </body>
 </html>
-
-iv class="progress-track"><div id="progressBar" class="progress-fill"></div></div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <p class="muted"><span id="used">—</span> de 5 giros utilizados</p>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                </div>
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <div class="panel history-panel">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  <p class="eyebrow">REGISTRO NINJA</p>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            <h2>Seus resultados</h2>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      <ul id="historyList" class="history-list">
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  <li class="empty-history">Faça login para ver seu histórico.</li>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            </ul>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </div>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          </aside>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              </section>
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  <footer>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        <span>SHINOBI ZENKAI</span>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              <span>O destino favorece quem está preparado.</span>
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    <span>O destino favorece quem está preparado.</span>
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   </footer>
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     </main>
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     </body>
